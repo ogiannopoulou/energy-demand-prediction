@@ -206,9 +206,9 @@ Without an API key, the pipeline uses realistic synthetic data that preserves th
 
 ## Author
 
-**Ourania Giannopoulou** — Applied Mathematics PhD, CFD/ML researcher
+**Ourania Giannopoulou** — Applied Mathematics PhD, Comp. and Data Sciences researcher 
 
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/ogiannopoulou)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/rania-giannopoulou)
 [![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/ogiannopoulou)
 
 ---
