@@ -1,9 +1,5 @@
 # Italian Electricity Demand Forecasting — Project Report
 
-**Author:** Ourania Giannopoulou  
-**Date:** July 2026  
-**Role:** Senior Data Scientist — Key Partner Digital (Rome)
-
 ---
 
 ## 1. Executive Summary
