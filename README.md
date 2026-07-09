@@ -170,8 +170,8 @@ terna_energy_project/
 
 ```bash
 # Clone
-git clone https://github.com/ogiannopoulou/terna-energy-project.git
-cd terna-energy-project
+git clone https://github.com/ogiannopoulou/energy-demand-prediction.git
+cd energy-demand-prediction
 
 # Setup
 python -m venv .venv
