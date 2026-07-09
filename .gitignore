@@ -1,0 +1,42 @@
+# Data
+data/raw/
+data/processed/
+
+# MLflow
+mlflow_results/
+notebooks/mlruns/
+
+# Secrets
+entsoe_api_key
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Jupyter
+.ipynb_checkpoints/
+*_executed.ipynb
+
+# Environment
+.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
