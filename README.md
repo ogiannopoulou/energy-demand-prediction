@@ -14,7 +14,7 @@
 </p>
 
 <p align="center">
-  Forecasting Italian electricity demand using gradient boosting, with SHAP explainability, anomaly detection, and MLOps tracking.
+  Forecasting electricity demand (in Italy) using gradient boosting, with SHAP explainability, anomaly detection, and MLOps tracking.
   <br>
   <a href="PROJECT_REPORT.md"><strong>Read the full report »</strong></a>
 </p>
