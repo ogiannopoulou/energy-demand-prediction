@@ -260,16 +260,16 @@ The classifier achieves **AUC > 0.98**, meaning it almost perfectly distinguishe
 ### Project Structure
 ```
 terna_energy_project/
-├── src/
-│   ├── data/           # Data loading & feature engineering
-│   ├── models/         # ML models & explainability
-│   ├── monitoring/     # MLflow tracking
-│   └── llm/            # Report generation
-├── notebooks/          # 6 Jupyter notebooks (01-06)
-├── tests/              # Unit tests
-├── figures/            # Diagnostic plots
-├── reports/            # Generated reports
-└── mlflow_results/     # MLflow SQLite database
+  src/
+    data/           # Data loading & feature engineering
+    models/         # ML models & explainability
+    monitoring/     # MLflow tracking
+    llm/            # Report generation
+  notebooks/        # 6 Jupyter notebooks (01-06)
+  tests/            # Unit tests
+  figures/          # Diagnostic plots
+  reports/          # Generated reports
+  mlflow_results/   # MLflow SQLite database
 ```
 
 ---
