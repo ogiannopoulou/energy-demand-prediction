@@ -37,6 +37,10 @@ This project demonstrates a complete ML pipeline for **short-term load forecasti
 | Peak Classification | LightGBM | AUC = 0.9806 |
 | Anomaly Detection | Isolation Forest | 263 anomalies (1.0%) |
 
+<p align="center">
+  <img src="figures/06_actual_vs_predicted.png" alt="Actual vs Predicted Demand" width="90%">
+</p>
+
 ---
 
 ## Pipeline Architecture
