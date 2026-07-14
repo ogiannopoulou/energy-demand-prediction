@@ -2,12 +2,15 @@
 Italian Electricity Data Ingestion
 Uses ENTSO-E Transparency Platform API (real data) with synthetic fallback
 """
+import logging
 import pandas as pd
 import numpy as np
 import requests
 import os
 from pathlib import Path
 from datetime import datetime, timedelta
+
+logger = logging.getLogger(__name__)
 
 
 PROJECT_ROOT = Path(__file__).parent.parent.parent
@@ -74,7 +77,7 @@ class EntsoeClient:
         xml = self._query({
             "documentType": self.DOC_ACTUAL_LOAD,
             "processType": self.PROC_ACTUAL,
-            "out_Domain": ITALY_AREA,
+            "outBiddingZone_Domain": ITALY_AREA,
             "periodStart": start,
             "periodEnd": end,
         })
@@ -85,7 +88,7 @@ class EntsoeClient:
         xml = self._query({
             "documentType": self.DOC_FORECAST_LOAD,
             "processType": self.PROC_FORECAST,
-            "out_Domain": ITALY_AREA,
+            "outBiddingZone_Domain": ITALY_AREA,
             "periodStart": start,
             "periodEnd": end,
         })
@@ -119,25 +122,30 @@ class EntsoeClient:
         
         root = ET.fromstring(xml)
         
+        # Detect namespace from root tag
+        ns_uri = root.tag.split("}")[0].lstrip("{") if "}" in root.tag else ""
+        ns = {"ns": ns_uri} if ns_uri else {}
+        ns_prefix = f"ns:" if ns else ""
+        
         records = []
         
-        for ts in root.findall(".//TimeSeries"):
-            for period in ts.findall(".//Period"):
-                resolution = period.find("resolution")
+        for ts in root.findall(f".//{ns_prefix}TimeSeries", ns):
+            for period in ts.findall(f".//{ns_prefix}Period", ns):
+                resolution = period.find(f"{ns_prefix}resolution", ns)
                 if resolution is not None:
                     res = resolution.text
                 else:
                     res = "PT60M"
                 
-                start_str = period.find("timeInterval/start")
+                start_str = period.find(f"{ns_prefix}timeInterval/{ns_prefix}start", ns)
                 if start_str is None:
                     continue
                 
                 start_dt = pd.to_datetime(start_str.text)
                 
-                for point in period.findall(".//Point"):
-                    pos = int(point.find("position").text)
-                    val = point.find("quantity")
+                for point in period.findall(f".//{ns_prefix}Point", ns):
+                    pos = int(point.find(f"{ns_prefix}position", ns).text)
+                    val = point.find(f"{ns_prefix}quantity", ns)
                     
                     if val is not None and val.text:
                         dt = start_dt + timedelta(minutes=(pos - 1) * self._resolution_minutes(res))
@@ -159,6 +167,11 @@ class EntsoeClient:
         
         root = ET.fromstring(xml)
         
+        # Detect namespace from root tag
+        ns_uri = root.tag.split("}")[0].lstrip("{") if "}" in root.tag else ""
+        ns = {"ns": ns_uri} if ns_uri else {}
+        ns_prefix = f"ns:" if ns else ""
+        
         gen_type_map = {
             "B01": "thermal_mw",
             "B02": "gas_mw",
@@ -172,27 +185,27 @@ class EntsoeClient:
         
         all_records = {}
         
-        for ts in root.findall(".//TimeSeries"):
-            psr = ts.find(".//psrType")
+        for ts in root.findall(f".//{ns_prefix}TimeSeries", ns):
+            psr = ts.find(f".//{ns_prefix}psrType", ns)
             if psr is None:
                 continue
             
             gen_type = psr.text
             col_name = gen_type_map.get(gen_type, f"gen_{gen_type}_mw")
             
-            for period in ts.findall(".//Period"):
-                resolution = period.find("resolution")
+            for period in ts.findall(f".//{ns_prefix}Period", ns):
+                resolution = period.find(f"{ns_prefix}resolution", ns)
                 res = resolution.text if resolution is not None else "PT60M"
                 
-                start_str = period.find("timeInterval/start")
+                start_str = period.find(f"{ns_prefix}timeInterval/{ns_prefix}start", ns)
                 if start_str is None:
                     continue
                 
                 start_dt = pd.to_datetime(start_str.text)
                 
-                for point in period.findall(".//Point"):
-                    pos = int(point.find("position").text)
-                    val = point.find("quantity")
+                for point in period.findall(f".//{ns_prefix}Point", ns):
+                    pos = int(point.find(f"{ns_prefix}position", ns).text)
+                    val = point.find(f"{ns_prefix}quantity", ns)
                     
                     if val is not None and val.text:
                         dt = start_dt + timedelta(minutes=(pos - 1) * self._resolution_minutes(res))
@@ -230,7 +243,7 @@ def download_entsoe_data(dataset: str, start: datetime, end: datetime) -> pd.Dat
     cache_path = RAW_DIR / f"{dataset}_{start.strftime('%Y%m%d')}_{end.strftime('%Y%m%d')}.parquet"
     
     if cache_path.exists():
-        print(f"Loading cached data from {cache_path}")
+        logger.info("Loading cached data from %s", cache_path)
         return pd.read_parquet(cache_path)
     
     try:
@@ -254,14 +267,14 @@ def download_entsoe_data(dataset: str, start: datetime, end: datetime) -> pd.Dat
         
         if not df.empty:
             df.to_parquet(cache_path)
-            print(f"Saved {len(df)} rows to {cache_path}")
+            logger.info("Saved %d rows to %s", len(df), cache_path)
             return df
         
         raise ValueError("API returned empty data")
     
     except Exception as e:
-        print(f"ENTSO-E API failed: {e}")
-        print("Generating synthetic data...")
+        logger.error("ENTSO-E API failed: %s", e)
+        logger.warning("Generating synthetic data...")
         return generate_synthetic_data(dataset)
 
 
@@ -351,7 +364,7 @@ def generate_synthetic_data(dataset: str) -> pd.DataFrame:
     
     cache_path = RAW_DIR / f"{dataset}_synthetic.csv"
     df.to_csv(cache_path)
-    print(f"Generated synthetic data saved to {cache_path}")
+    logger.info("Generated synthetic data saved to %s", cache_path)
     
     return df
 
@@ -419,17 +432,18 @@ def merge_demand_generation() -> pd.DataFrame:
 
 
 if __name__ == "__main__":
-    print("Testing data ingestion...")
+    logging.basicConfig(level=logging.INFO)
+    logger.info("Testing data ingestion...")
     
     demand = load_demand_data()
-    print(f"\nDemand: {demand.shape}")
-    print(f"Date range: {demand.index.min()} to {demand.index.max()}")
+    logger.info("Demand: %s", demand.shape)
+    logger.info("Date range: %s to %s", demand.index.min(), demand.index.max())
     print(demand.head())
     
     generation = load_generation_data()
-    print(f"\nGeneration: {generation.shape}")
+    logger.info("Generation: %s", generation.shape)
     print(generation.head())
     
     merged = merge_demand_generation()
-    print(f"\nMerged: {merged.shape}")
+    logger.info("Merged: %s", merged.shape)
     print(merged.head())

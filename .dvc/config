@@ -1,0 +1,13 @@
+# DVC configuration for data versioning
+# See https://dvc.org/doc for more information
+
+[core]
+    analytics = false
+
+[remote "origin"]
+    url = s3://terna-energy-data
+    access_key_id = ${AWS_ACCESS_KEY_ID}
+    secret_access_key = ${AWS_SECRET_ACCESS_KEY}
+
+[remote "github"]
+    url = gh://ogiannopoulou/energy-demand-prediction

@@ -1,0 +1,14 @@
+.git
+.venv
+venv
+__pycache__
+*.pyc
+*.pyo
+.ipynb_checkpoints
+*.egg-info
+dist
+build
+.pytest_cache
+htmlcov
+.coverage
+coverage.xml
