@@ -1,6 +1,11 @@
 """
 Comprehensive tests for the Terna Energy Project pipeline
 """
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 from datetime import datetime
 
 import numpy as np
