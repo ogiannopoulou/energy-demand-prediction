@@ -1,10 +1,6 @@
 """
 Comprehensive tests for the Terna Energy Project pipeline
 """
-import sys
-
-sys.path.insert(0, '..')
-
 from datetime import datetime
 
 import numpy as np
