@@ -1,14 +1,14 @@
 """Pydantic schemas for API request/response models."""
-from pydantic import BaseModel, Field
 from datetime import datetime as dt
-from typing import Optional
+
+from pydantic import BaseModel, Field
 
 
 class PredictionRequest(BaseModel):
     """Single prediction request."""
     prediction_datetime: dt = Field(..., alias="datetime", description="Datetime for prediction (ISO format)")
     features: dict = Field(default_factory=dict, description="Additional features (wind_mw, solar_mw, etc.)")
-    
+
     model_config = {"populate_by_name": True}
 
 
@@ -35,9 +35,9 @@ class HealthResponse(BaseModel):
     """Health check response."""
     status: str
     model_loaded: bool
-    model_name: Optional[str] = None
-    model_version: Optional[str] = None
-    feature_count: Optional[int] = None
+    model_name: str | None = None
+    model_version: str | None = None
+    feature_count: int | None = None
 
 
 class ModelInfo(BaseModel):
