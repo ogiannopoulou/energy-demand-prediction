@@ -11,6 +11,9 @@
   <img src="https://img.shields.io/badge/SHAP-0.45-purple" alt="SHAP">
   <img src="https://img.shields.io/badge/MLflow-2.15-blue?logo=mlflow&logoColor=white" alt="MLflow">
   <img src="https://img.shields.io/badge/Scikit--learn-1.5-orange?logo=scikit-learn&logoColor=white" alt="Scikit-learn">
+  <img src="https://img.shields.io/badge/FastAPI-0.100-green?logo=fastapi&logoColor=white" alt="FastAPI">
+  <img src="https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white" alt="Docker">
+  <img src="https://img.shields.io/badge/GitHub%20Actions-2088FF?logo=githubactions&logoColor=white" alt="GitHub Actions">
 </p>
 
 <p align="center">
@@ -29,8 +32,10 @@ This project demonstrates a complete ML pipeline for **short-term load forecasti
 
 | Model | MAE (MW) | RMSE (MW) | R² | MAPE |
 |-------|----------|-----------|-----|------|
-| **XGBoost** | 1,220 | 1,520 | 0.9446 | 4.41% |
-| **LightGBM** | 1,207 | 1,505 | 0.9457 | 4.35% |
+| **XGBoost** | 2,639 | 3,893 | 0.7048 | 9.24% |
+| **LightGBM** | 2,653 | 3,898 | 0.7039 | 9.30% |
+
+*Results on 1 year of real ENTSO-E data (2023)*
 
 | Task | Method | Performance |
 |------|--------|-------------|
@@ -63,6 +68,48 @@ This project demonstrates a complete ML pipeline for **short-term load forecasti
               │  (3 methods) │              │  (SQLite)       │
               └──────────────┘              └─────────────────┘
 ```
+
+---
+
+## MLOps Stack
+
+| Component | Tool | Purpose |
+|-----------|------|---------|
+| **Data Versioning** | DVC | Version control for datasets |
+| **Experiment Tracking** | MLflow | Log params, metrics, models |
+| **API** | FastAPI | Serve predictions |
+| **Containerization** | Docker | Reproducible environments |
+| **CI/CD** | GitHub Actions | Automated testing & deployment |
+| **Dashboard** | Streamlit | Monitoring & visualization |
+
+---
+
+## Quick Start
+
+```bash
+# Install
+make setup
+
+# Train models (requires ENTSO_E_API_KEY env var)
+make train
+
+# Start API
+make api
+
+# Run tests
+make test
+```
+
+---
+
+## API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/health` | Health check |
+| GET | `/models` | List available models |
+| POST | `/predict` | Single prediction |
+| POST | `/predict/batch` | Batch predictions |
 
 ---
 
