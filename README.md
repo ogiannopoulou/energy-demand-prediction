@@ -5,6 +5,7 @@
 <h3 align="center">End-to-End ML Pipeline for Short-Term Electricity Demand Forecasting</h3>
 
 <p align="center">
+  <a href="https://github.com/ogiannopoulou/energy-demand-prediction/actions/workflows/ml_pipeline.yml"><img src="https://github.com/ogiannopoulou/energy-demand-prediction/actions/workflows/ml_pipeline.yml/badge.svg" alt="CI/CD"></a>
   <img src="https://img.shields.io/badge/Python-3.12-blue?logo=python&logoColor=white" alt="Python">
   <img src="https://img.shields.io/badge/XGBoost-2.0-red?logo=xgboost&logoColor=white" alt="XGBoost">
   <img src="https://img.shields.io/badge/LightGBM-4.0-orange?logo=lightgbm&logoColor=white" alt="LightGBM">
@@ -79,25 +80,46 @@ This project demonstrates a complete ML pipeline for **short-term load forecasti
 | **Experiment Tracking** | MLflow | Log params, metrics, models |
 | **API** | FastAPI | Serve predictions |
 | **Containerization** | Docker | Reproducible environments |
-| **CI/CD** | GitHub Actions | Automated testing & deployment |
+| **CI/CD** | GitHub Actions | Automated testing, training & deployment |
 | **Dashboard** | Streamlit | Monitoring & visualization |
 
 ---
 
-## Quick Start
+## CI/CD Pipeline
+
+Fully automated 3-stage GitHub Actions pipeline triggered on every push/PR to `main`:
+
+```
+  Push/PR ──▶ test ──▶ train ──▶ build
+              (lint +    (model    (Docker
+              22 tests)  training)  + GHCR)
+```
+
+| Stage | What it does | Trigger |
+|-------|-------------|---------|
+| **test** | Ruff lint + 22 pytest tests with coverage upload to Codecov | Every push & PR |
+| **train** | Trains XGBoost & LightGBM on ENTSO-E data, logs to MLflow, saves models as artifacts | `main` only, after test passes |
+| **build** | Builds multi-stage Docker image, pushes to GitHub Container Registry with SHA + `latest` tags | `main` only, after train passes |
+
+### Testing Strategy
+
+22 tests covering the full pipeline:
+
+| Category | Tests | What's validated |
+|----------|-------|-----------------|
+| Data Loading | 3 | Synthetic generation, data types, statistics ranges |
+| Feature Engineering | 7 | Temporal, lag, rolling features, train/test split, feature matrix shape |
+| Model Training | 3 | XGBoost, LightGBM, regression metrics computation |
+| Anomaly Detection | 2 | Z-score, IQR, Isolation Forest methods |
+| Classification | 2 | Peak/off-peak classification, anomaly type detection |
+| API | 3 | Health endpoint, models endpoint, predict endpoint |
+| MLOps | 2 | MLflow setup, experiment logging |
+| Integration | 1 | End-to-end pipeline: data → features → train → predict |
 
 ```bash
-# Install
-make setup
-
-# Train models (requires ENTSO_E_API_KEY env var)
-make train
-
-# Start API
-make api
-
-# Run tests
-make test
+# Local CI simulation
+make test          # Run all 22 tests with coverage
+make lint          # Ruff lint + format check
 ```
 
 ---
@@ -183,6 +205,8 @@ The project includes 13 diagnostic visualizations to validate model correctness:
 
 ```
 terna_energy_project/
+├── .github/workflows/
+│   └── ml_pipeline.yml          # CI/CD: test → train → build
 ├── src/
 │   ├── data/
 │   │   ├── terna_loader.py          # ENTSO-E API client + synthetic data
@@ -194,10 +218,21 @@ terna_energy_project/
 │   │   └── mlops.py                 # MLflow experiment tracking
 │   └── llm/
 │       └── report_generator.py      # Automated report generation
+├── api/
+│   ├── app.py                       # FastAPI application
+│   ├── schemas.py                   # Pydantic request/response models
+│   └── model_store.py               # Model loading & serving
+├── tests/
+│   ├── conftest.py                  # Test path configuration
+│   └── test_pipeline.py             # 22 tests (data, models, API, MLOps)
 ├── notebooks/                       # 6 Jupyter notebooks
-├── tests/                           # Unit tests (5 passing)
 ├── figures/                         # 13 diagnostic plots
 ├── reports/                         # Generated reports
+├── models/                          # Trained model artifacts
+├── Dockerfile                       # Multi-stage Docker build
+├── docker-compose.yml               # Full stack orchestration
+├── Makefile                         # Dev commands: test, lint, train, api
+├── pyproject.toml                   # Project config (pytest, ruff, mypy)
 ├── PROJECT_REPORT.md                # Full technical report
 └── requirements.txt
 ```
@@ -209,10 +244,14 @@ terna_energy_project/
 - **Languages**: Python 3.12
 - **ML**: XGBoost, LightGBM, Scikit-learn, Isolation Forest
 - **Explainability**: SHAP (TreeExplainer)
-- **MLOps**: MLflow with SQLite backend
+- **MLOps**: MLflow with SQLite backend, DVC
 - **Data**: ENTSO-E Transparency Platform API
-- **Visualization**: Matplotlib, Seaborn
-- **Testing**: Pytest
+- **API**: FastAPI + Uvicorn + Pydantic
+- **Visualization**: Matplotlib, Seaborn, Plotly
+- **Testing**: Pytest + Coverage
+- **Linting**: Ruff
+- **Containerization**: Docker (multi-stage) + Docker Compose
+- **CI/CD**: GitHub Actions (test → train → build → GHCR)
 - **GenAI**: OpenAI API (optional, for enhanced reports)
 
 ---
@@ -220,25 +259,26 @@ terna_energy_project/
 ## Quick Start
 
 ```bash
-# Clone
+# Clone & install
 git clone https://github.com/ogiannopoulou/energy-demand-prediction.git
 cd energy-demand-prediction
-
-# Setup
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-
-# Run notebooks (in order)
-jupyter notebook notebooks/01_data_ingestion.ipynb
-jupyter notebook notebooks/02_forecasting.ipynb
-# ... etc
+python -m venv .venv && source .venv/bin/activate
+make setup
 
 # Run tests
-python -m pytest tests/ -v
+make test
 
-# View MLflow UI
-mlflow ui --backend-store-uri sqlite:///mlflow_results/mlflow.db
+# Train models (requires ENTSOE_API_KEY env var, falls back to synthetic)
+make train
+
+# Start API server
+make api
+
+# Start Streamlit dashboard
+make dashboard
+
+# Run full stack with Docker
+make docker-up
 ```
 
 ---
