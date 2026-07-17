@@ -363,6 +363,7 @@ def generate_synthetic_data(dataset: str) -> pd.DataFrame:
 
     df.index.name = "datetime"
 
+    ensure_dirs()
     cache_path = RAW_DIR / f"{dataset}_synthetic.csv"
     df.to_csv(cache_path)
     logger.info("Generated synthetic data saved to %s", cache_path)
